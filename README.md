@@ -1,0 +1,50 @@
+# Antigravity: Prompt Optimization & LLM Compression Toolkit
+
+This repository explores the information theory limits of Large Language Models (LLMs) through two distinct lenses:
+1. **Prompt Optimization**: Utilizing Greedy Coordinate Gradient (GCG) and soft continuous embeddings to find mathematically optimal system prompts that minimize "Total Surprise" (Shannon Entropy) for a target output.
+2. **LLM Compression**: An experimental text compression engine that perfectly reconstructs documents by only storing "surprise" tokens (tokens the LLM's greedy decoding fails to predict).
+
+## Core Modules (`src/`)
+
+### 1. `instruct_prompt_optimizer.py`
+A highly generalized, discrete prompt optimizer. 
+- **Multi-Document Batching**: Optimizes a system prompt across a diverse dataset to prevent overfitting.
+- **Early Stopping**: Halts computation when average loss plateaus (via patience hook).
+- **Apple Silicon Optimized**: Actively manages MPS graph memory using `torch.mps.empty_cache()` to prevent unified memory crashes.
+
+### 2. `llm_compressor.py`
+An information-theoretic text compression engine.
+- **Teacher Forcing Compression**: Tokenizes text and runs a single forward pass, logging only tokens that fail to match the LLM's `argmax` greedy prediction.
+- **Autoregressive Decompression**: Uses KV-caching to rapidly decode text, injecting the "surprise" tokens from the database when required to guarantee lossless reconstruction.
+
+## Examples (`examples/`)
+
+### `run_experiments.py`
+Runs a suite of optimization tests for structured JSON extraction and math logic, proving that the GCG optimizer can generalize behaviors on holdout test documents.
+
+### `test_compressor.py`
+Dynamically generates test documents of varying lengths to compute the compression ratio and prove 100% lossless decompression.
+*(**Warning**: Running the 1500+ token test on Apple Silicon MPS may crash machines with < 32GB RAM due to $N \times N$ attention matrix allocations during Teacher Forcing).*
+
+## Installation & Setup
+
+We recommend running this on Python 3.10+.
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/antigravity-toolkit.git
+cd antigravity-toolkit
+
+# Setup a virtual environment
+python -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+## Hardware Requirements
+By default, the codebase dynamically maps to the `mps` backend for Apple Silicon, `cuda` for NVIDIA GPUs, or falls back to `cpu`. 
+
+---
+*Created by the Google DeepMind Advanced Agentic Coding Team.*
