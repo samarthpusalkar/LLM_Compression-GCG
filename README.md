@@ -1,4 +1,4 @@
-# Antigravity: Prompt Optimization & LLM Compression Toolkit
+# Prompt Optimization & LLM Compression Toolkit
 
 This repository explores the information theory limits of Large Language Models (LLMs) through two distinct lenses:
 1. **Prompt Optimization**: Utilizing Greedy Coordinate Gradient (GCG) and soft continuous embeddings to find mathematically optimal system prompts that minimize "Total Surprise" (Shannon Entropy) for a target output.
@@ -32,8 +32,8 @@ We recommend running this on Python 3.10+.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/antigravity-toolkit.git
-cd antigravity-toolkit
+git clone https://github.com/samarthpusalkar/LLM_Compression-GCG.git
+cd LLM_Compression-GCG
 
 # Setup a virtual environment
 python -m venv venv
@@ -45,6 +45,3 @@ pip install -r requirements.txt
 
 ## Hardware Requirements
 By default, the codebase dynamically maps to the `mps` backend for Apple Silicon, `cuda` for NVIDIA GPUs, or falls back to `cpu`. 
-
----
-*Created by the Google DeepMind Advanced Agentic Coding Team.*
