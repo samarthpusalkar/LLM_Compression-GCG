@@ -3,7 +3,7 @@ import sys
 import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
-from llm_compressor import LLMCompressor
+from src.llm_compressor import LLMCompressor
 
 def generate_sample_texts():
     texts = {}
