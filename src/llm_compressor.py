@@ -6,6 +6,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 class LLMCompressor:
     def __init__(self, model_name="Qwen/Qwen2.5-0.5B"):
         print(f"Loading model: {model_name}")
+        self.model_name = model_name
         self.device = "mps" if torch.backends.mps.is_available() else "cpu"
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(model_name).to(self.device)
@@ -24,21 +25,28 @@ class LLMCompressor:
         with torch.no_grad():
             outputs = self.model(input_ids)
             logits = outputs.logits  # Shape: (1, N, V)
+            probs = torch.softmax(logits[0], dim=-1)
             
         predictions = logits[0].argmax(dim=-1).cpu().numpy()
+        probs_list = probs.cpu().tolist()
         
         surprises = {}
         # Token 0 has no prior context, so it's always a surprise
-        surprises["0"] = tokens[0]
+        surprises["0"] = {"token": tokens[0], "distribution": None}
         
         # For token i, the prediction comes from logits at i-1
         for i in range(1, len(tokens)):
             pred_tok = predictions[i-1]
             actual_tok = tokens[i]
             if pred_tok != actual_tok:
-                surprises[str(i)] = actual_tok
+                distribution = [round(x, 2) for x in probs_list[i-1]]
+                total_prob_norm_fact = sum(distribution)
+                if total_prob_norm_fact > 0:
+                    distribution = [round(x / total_prob_norm_fact, 2) for x in distribution]
+                surprises[str(i)] = {"token": actual_tok, "distribution": distribution}
                 
         db_content = {
+            "model_name": getattr(self, "model_name", "unknown"),
             "total_length": len(tokens),
             "surprises": surprises
         }
@@ -53,7 +61,12 @@ class LLMCompressor:
             db_content = json.load(f)
             
         total_length = db_content["total_length"]
-        surprises = {int(k): v for k, v in db_content["surprises"].items()}
+        surprises = {}
+        for k, v in db_content["surprises"].items():
+            if isinstance(v, dict):
+                surprises[int(k)] = v["token"]
+            else:
+                surprises[int(k)] = v
         
         if total_length == 0:
             return ""
